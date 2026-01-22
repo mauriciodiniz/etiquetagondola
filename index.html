@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Impressão de Etiquetas 58mm</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 30px;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #667eea;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 10px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        button, .file-label {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+
+        .btn-pdf {
+            background: #f56565;
+            color: white;
+            flex: 1;
+        }
+
+        .btn-pdf:hover {
+            background: #e53e3e;
+        }
+
+        .btn-print {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-print:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-print:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-add {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-add:hover {
+            background: #38a169;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            flex: 1;
+        }
+
+        .file-label {
+            background: #ed8936;
+            color: white;
+            text-align: center;
+            width: 100%;
+        }
+
+        .file-label:hover {
+            background: #dd6b20;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .info {
+            background: #ebf8ff;
+            border-left: 4px solid #4299e1;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        .info p {
+            color: #2c5282;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .preview-section {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #e2e8f0;
+        }
+
+        .preview-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .preview-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(58mm, 1fr));
+            gap: 15px;
+            justify-items: center;
+        }
+
+        .etiqueta-preview {
+            width: 58mm;
+            padding: 4mm 2mm;
+            font-family: Arial, sans-serif;
+            border: 2px solid #cbd5e0;
+            border-radius: 8px;
+            box-sizing: border-box;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+
+        .etiqueta-preview:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+        }
+
+        .etiqueta-preview.empty {
+            opacity: 0.3;
+            border-style: dashed;
+        }
+
+        @media print {
+            @page {
+                size: 58mm auto;
+                margin: 0;
+            }
+            
+            body {
+                margin: 0;
+                padding: 0;
+                width: 58mm;
+            }
+            
+            .container {
+                display: none !important;
+            }
+            
+            #printArea {
+                display: block !important;
+                width: 58mm;
+                margin: 0;
+                padding: 0;
+            }
+            
+            .etiqueta {
+                page-break-inside: avoid;
+                page-break-after: avoid;
+                page-break-before: avoid;
+                display: block !important;
+            }
+        }
+
+        .etiqueta {
+            width: 58mm;
+            padding: 4mm 2mm;
+            font-family: Arial, sans-serif;
+            border-bottom: 1px dashed #ccc;
+            box-sizing: border-box;
+            margin-bottom: 5mm;
+        }
+
+        .etiqueta-produto {
+            font-size: 9pt;
+            font-weight: bold;
+            margin-bottom: 3mm;
+            line-height: 1.3;
+            max-height: 2.6em;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            text-overflow: ellipsis;
+            word-wrap: break-word;
+        }
+
+        .etiqueta-preco {
+            font-size: 20pt;
+            font-weight: bold;
+            color: #000;
+            line-height: 1.1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏷️ Sistema de Impressão de Etiquetas 58mm</h1>
+        
+        <div class="info">
+            <p><strong>Instruções:</strong> Preencha os produtos e preços manualmente ou importe um arquivo CSV/Excel com 2 colunas (Produto, Preço).</p>
+        </div>
+
+        <div class="table-container">
+            <table id="produtosTable">
+                <thead>
+                    <tr>
+                        <th style="width: 60%;">Nome do Produto</th>
+                        <th style="width: 40%;">Preço (R$)</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr>
+                        <td><input type="text" class="produto" placeholder="Ex: Café Pilão 500g" oninput="updatePreview()"></td>
+                        <td><input type="text" class="preco" placeholder="Ex: 15,90" oninput="updatePreview()"></td>
+                    </tr>
+                    <tr>
+                        <td><input type="text" class="produto" placeholder="Ex: Açúcar Cristal 1kg" oninput="updatePreview()"></td>
+                        <td><input type="text" class="preco" placeholder="Ex: 4,50" oninput="updatePreview()"></td>
+                    </tr>
+                    <tr>
+                        <td><input type="text" class="produto" placeholder="Ex: Arroz Tio João 5kg" oninput="updatePreview()"></td>
+                        <td><input type="text" class="preco" placeholder="Ex: 28,90" oninput="updatePreview()"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="btn-container">
+            <button class="btn-add" onclick="addRow()">➕ Adicionar Linha</button>
+            
+            <div class="file-input-wrapper">
+                <label for="fileInput" class="file-label">📁 Importar Tabela (CSV/Excel)</label>
+                <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" onchange="importFile(event)">
+            </div>
+            
+            <button class="btn-pdf" onclick="generatePDF()">📄 Gerar PDF</button>
+            <button class="btn-print" id="printBtn" onclick="printPDF()" disabled>🖨️ Imprimir Etiquetas</button>
+        </div>
+
+        <div class="preview-section">
+            <h2 class="preview-title">📋 Pré-visualização das Etiquetas</h2>
+            <div class="preview-container" id="previewContainer"></div>
+        </div>
+    </div>
+
+    <div id="printArea" style="display: none;"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <script>
+        let currentPdfBlob = null;
+
+        function addRow() {
+            const tbody = document.getElementById('tableBody');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td><input type="text" class="produto" placeholder="Nome do produto" oninput="updatePreview()"></td>
+                <td><input type="text" class="preco" placeholder="Preço" oninput="updatePreview()"></td>
+            `;
+            tbody.appendChild(newRow);
+            updatePreview();
+        }
+
+        function importFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const fileName = file.name.toLowerCase();
+            
+            if (fileName.endsWith('.csv')) {
+                Papa.parse(file, {
+                    complete: function(results) {
+                        populateTable(results.data);
+                    },
+                    skipEmptyLines: true
+                });
+            } else if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
+                    populateTable(jsonData);
+                };
+                reader.readAsArrayBuffer(file);
+            }
+        }
+
+        function populateTable(data) {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            let startIndex = 0;
+            if (data[0] && (typeof data[0][0] === 'string' && data[0][0].toLowerCase().includes('produto'))) {
+                startIndex = 1;
+            }
+            
+            for (let i = startIndex; i < data.length; i++) {
+                if (data[i] && data[i].length >= 2 && data[i][0] && data[i][1]) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><input type="text" class="produto" value="${data[i][0]}" oninput="updatePreview()"></td>
+                        <td><input type="text" class="preco" value="${data[i][1]}" oninput="updatePreview()"></td>
+                    `;
+                    tbody.appendChild(row);
+                }
+            }
+            
+            alert(`${tbody.children.length} produtos importados com sucesso!`);
+            updatePreview();
+        }
+
+        function updatePreview() {
+            const rows = document.getElementById('tableBody').getElementsByTagName('tr');
+            const previewContainer = document.getElementById('previewContainer');
+            
+            previewContainer.innerHTML = '';
+            currentPdfBlob = null;
+            document.getElementById('printBtn').disabled = true;
+            
+            for (let i = 0; i < rows.length; i++) {
+                const produtoInput = rows[i].querySelector('.produto');
+                const precoInput = rows[i].querySelector('.preco');
+                
+                if (produtoInput && precoInput) {
+                    const produto = produtoInput.value.trim();
+                    const preco = precoInput.value.trim();
+                    
+                    const etiqueta = document.createElement('div');
+                    etiqueta.className = 'etiqueta-preview';
+                    
+                    if (produto || preco) {
+                        etiqueta.innerHTML = `
+                            <div class="etiqueta-produto">${produto || '(vazio)'}</div>
+                            <div class="etiqueta-preco">R$ ${preco || '0,00'}</div>
+                        `;
+                    } else {
+                        etiqueta.classList.add('empty');
+                        etiqueta.innerHTML = `
+                            <div class="etiqueta-produto">(vazio)</div>
+                            <div class="etiqueta-preco">R$ 0,00</div>
+                        `;
+                    }
+                    
+                    previewContainer.appendChild(etiqueta);
+                }
+            }
+        }
+
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const rows = document.getElementById('tableBody').getElementsByTagName('tr');
+            
+            const etiquetas = [];
+            
+            for (let i = 0; i < rows.length; i++) {
+                const produtoInput = rows[i].querySelector('.produto');
+                const precoInput = rows[i].querySelector('.preco');
+                
+                if (produtoInput && precoInput) {
+                    const produto = produtoInput.value.trim();
+                    const preco = precoInput.value.trim();
+                    
+                    if (produto && preco) {
+                        etiquetas.push({ produto, preco });
+                    }
+                }
+            }
+            
+            if (etiquetas.length === 0) {
+                alert('Preencha pelo menos um produto e preço para gerar o PDF!');
+                return;
+            }
+            
+            const doc = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: [58, 297]
+            });
+            
+            let yPosition = 5;
+            
+            etiquetas.forEach((item, index) => {
+                if (index > 0) {
+                    yPosition += 20;
+                }
+                
+                if (yPosition > 270) {
+                    doc.addPage([58, 297]);
+                    yPosition = 5;
+                }
+                
+                doc.setFontSize(9);
+                doc.setFont(undefined, 'bold');
+                
+                const produtoLines = doc.splitTextToSize(item.produto, 54);
+                const maxLines = 2;
+                const linesToShow = produtoLines.slice(0, maxLines);
+                
+                linesToShow.forEach((line, lineIndex) => {
+                    doc.text(line, 2, yPosition + (lineIndex * 4));
+                });
+                
+                doc.setFontSize(18);
+                doc.text(`R$ ${item.preco}`, 2, yPosition + 12);
+                
+                doc.setDrawColor(200);
+                doc.setLineWidth(0.1);
+                doc.line(2, yPosition + 16, 56, yPosition + 16);
+            });
+            
+            const pdfBlob = doc.output('blob');
+            currentPdfBlob = pdfBlob;
+            
+            const url = URL.createObjectURL(pdfBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'etiquetas_58mm.pdf';
+            link.click();
+            
+            document.getElementById('printBtn').disabled = false;
+            
+            alert(`PDF gerado com ${etiquetas.length} etiqueta(s)! Arquivo baixado e pronto para impressão.`);
+        }
+
+        function printPDF() {
+            if (!currentPdfBlob) {
+                alert('Gere o PDF primeiro antes de imprimir!');
+                return;
+            }
+            
+            const url = URL.createObjectURL(currentPdfBlob);
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = url;
+            document.body.appendChild(iframe);
+            
+            iframe.onload = function() {
+                iframe.contentWindow.print();
+            };
+        }
+
+        function printLabels() {
+            const rows = document.getElementById('tableBody').getElementsByTagName('tr');
+            const printArea = document.getElementById('printArea');
+            
+            printArea.innerHTML = '';
+            let count = 0;
+            
+            for (let i = 0; i < rows.length; i++) {
+                const produtoInput = rows[i].querySelector('.produto');
+                const precoInput = rows[i].querySelector('.preco');
+                
+                if (produtoInput && precoInput) {
+                    const produto = produtoInput.value.trim();
+                    const preco = precoInput.value.trim();
+                    
+                    if (produto && preco) {
+                        const etiqueta = document.createElement('div');
+                        etiqueta.className = 'etiqueta';
+                        etiqueta.innerHTML = `
+                            <div class="etiqueta-produto">${produto}</div>
+                            <div class="etiqueta-preco">R$ ${preco}</div>
+                        `;
+                        printArea.appendChild(etiqueta);
+                        count++;
+                    }
+                }
+            }
+            
+            if (count === 0) {
+                alert('Preencha pelo menos um produto e preço para imprimir!');
+                return;
+            }
+            
+            setTimeout(() => {
+                window.print();
+            }, 300);
+        }
+
+        window.onload = function() {
+            updatePreview();
+        };
+    </script>
+</body>
+</html>
