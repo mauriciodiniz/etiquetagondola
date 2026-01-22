@@ -155,13 +155,19 @@
         }
 
         @media print {
+            @page {
+                size: 58mm auto;
+                margin: 0;
+            }
+            
             body {
                 margin: 0;
                 padding: 0;
+                width: 58mm;
             }
             
             .container {
-                display: none;
+                display: none !important;
             }
             
             #printArea {
@@ -175,6 +181,7 @@
                 page-break-inside: avoid;
                 page-break-after: avoid;
                 page-break-before: avoid;
+                display: block !important;
             }
         }
 
@@ -352,9 +359,11 @@
                 return;
             }
             
+            alert(`${count} etiqueta(s) preparada(s) para impressão!`);
+            
             setTimeout(() => {
                 window.print();
-            }, 100);
+            }, 300);
         }
     </script>
 </body>
