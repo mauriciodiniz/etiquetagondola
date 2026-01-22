@@ -314,26 +314,30 @@
         }
 
         function printLabels() {
-            const produtos = document.querySelectorAll('.produto');
-            const precos = document.querySelectorAll('.preco');
+            const rows = document.getElementById('tableBody').getElementsByTagName('tr');
             const printArea = document.getElementById('printArea');
             
             printArea.innerHTML = '';
             let count = 0;
             
-            for (let i = 0; i < produtos.length; i++) {
-                const produto = produtos[i].value.trim();
-                const preco = precos[i].value.trim();
+            for (let i = 0; i < rows.length; i++) {
+                const produtoInput = rows[i].querySelector('.produto');
+                const precoInput = rows[i].querySelector('.preco');
                 
-                if (produto && preco) {
-                    const etiqueta = document.createElement('div');
-                    etiqueta.className = 'etiqueta';
-                    etiqueta.innerHTML = `
-                        <div class="etiqueta-produto">${produto}</div>
-                        <div class="etiqueta-preco">R$ ${preco}</div>
-                    `;
-                    printArea.appendChild(etiqueta);
-                    count++;
+                if (produtoInput && precoInput) {
+                    const produto = produtoInput.value.trim();
+                    const preco = precoInput.value.trim();
+                    
+                    if (produto && preco) {
+                        const etiqueta = document.createElement('div');
+                        etiqueta.className = 'etiqueta';
+                        etiqueta.innerHTML = `
+                            <div class="etiqueta-produto">${produto}</div>
+                            <div class="etiqueta-preco">R$ ${preco}</div>
+                        `;
+                        printArea.appendChild(etiqueta);
+                        count++;
+                    }
                 }
             }
             
@@ -342,7 +346,9 @@
                 return;
             }
             
-            window.print();
+            setTimeout(() => {
+                window.print();
+            }, 100);
         }
     </script>
 </body>
