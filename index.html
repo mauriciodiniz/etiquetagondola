@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Impressão de Etiquetas 58mm</title>
+    <title>Gerador de Etiquetas de Preço</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -12,447 +14,401 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #e3f2fd 0%, #e8eaf6 100%);
             padding: 20px;
+            min-height: 100vh;
         }
 
         .container {
-            max-width: 900px;
+            max-width: 1000px;
             margin: 0 auto;
             background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             padding: 30px;
         }
 
         h1 {
-            color: #333;
             text-align: center;
+            color: #1976d2;
             margin-bottom: 30px;
             font-size: 28px;
         }
 
-        .table-container {
-            overflow-x: auto;
-            margin-bottom: 20px;
-            max-height: 400px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        thead {
-            background: #667eea;
-            color: white;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        th {
-            padding: 15px;
-            text-align: left;
-            font-weight: 600;
-        }
-
-        td {
-            padding: 10px 15px;
-            border-bottom: 1px solid #eee;
-        }
-
-        input[type="text"] {
-            width: 100%;
-            padding: 8px 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 6px;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-
-        input[type="text"]:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .btn-container {
+        .buttons {
             display: flex;
-            gap: 15px;
+            gap: 10px;
+            margin-bottom: 20px;
             flex-wrap: wrap;
-            margin-top: 20px;
         }
 
         button, .file-label {
-            padding: 12px 24px;
+            padding: 12px 20px;
             border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
+            border-radius: 6px;
             cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
             transition: all 0.3s;
-            display: inline-block;
-        }
-
-        .btn-print {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            flex: 1;
-        }
-
-        .btn-print:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
 
         .btn-add {
-            background: #48bb78;
+            background: #2196f3;
             color: white;
         }
 
         .btn-add:hover {
-            background: #38a169;
+            background: #1976d2;
         }
 
-        .file-input-wrapper {
-            position: relative;
-            flex: 1;
+        .btn-excel {
+            background: #4caf50;
+            color: white;
+        }
+
+        .btn-excel:hover {
+            background: #388e3c;
+        }
+
+        .btn-pdf {
+            background: #9c27b0;
+            color: white;
+        }
+
+        .btn-pdf:hover {
+            background: #7b1fa2;
         }
 
         .file-label {
-            background: #ed8936;
+            background: #4caf50;
             color: white;
-            text-align: center;
-            width: 100%;
         }
 
         .file-label:hover {
-            background: #dd6b20;
+            background: #388e3c;
         }
 
         input[type="file"] {
             display: none;
         }
 
-        .info {
-            background: #ebf8ff;
-            border-left: 4px solid #4299e1;
-            padding: 15px;
+        table {
+            width: 100%;
+            border-collapse: collapse;
             margin-bottom: 20px;
-            border-radius: 5px;
         }
 
-        .info p {
-            color: #2c5282;
-            font-size: 14px;
-            line-height: 1.6;
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
         }
 
-        .preview-section {
-            margin-top: 30px;
-            padding-top: 30px;
-            border-top: 2px solid #e2e8f0;
-        }
-
-        .preview-title {
-            font-size: 20px;
+        th {
+            background: #f5f5f5;
             font-weight: 600;
             color: #333;
-            margin-bottom: 20px;
+        }
+
+        tr:hover {
+            background: #f9f9f9;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #2196f3;
+            box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+        }
+
+        .btn-remove {
+            background: transparent;
+            color: #f44336;
+            padding: 5px 10px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .btn-remove:hover {
+            color: #d32f2f;
+        }
+
+        .btn-remove:disabled {
+            color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .instructions {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 6px;
+            margin-top: 20px;
+        }
+
+        .instructions h3 {
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+
+        .instructions ul {
+            margin-left: 20px;
+            color: #555;
+        }
+
+        .instructions li {
+            margin: 8px 0;
+        }
+
+        .col-nome {
+            width: 60%;
+        }
+
+        .col-preco {
+            width: 25%;
+        }
+
+        .col-acoes {
+            width: 15%;
             text-align: center;
-        }
-
-        .preview-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(58mm, 1fr));
-            gap: 15px;
-            justify-items: center;
-        }
-
-        .etiqueta-preview {
-            width: 58mm;
-            padding: 4mm 2mm;
-            font-family: Arial, sans-serif;
-            border: 2px solid #cbd5e0;
-            border-radius: 8px;
-            box-sizing: border-box;
-            background: white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            transition: all 0.3s;
-        }
-
-        .etiqueta-preview:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            transform: translateY(-2px);
-        }
-
-        .etiqueta-preview.empty {
-            opacity: 0.3;
-            border-style: dashed;
-        }
-
-        @media print {
-            @page {
-                size: 58mm auto;
-                margin: 0;
-            }
-            
-            body {
-                margin: 0;
-                padding: 0;
-                width: 58mm;
-            }
-            
-            .container {
-                display: none !important;
-            }
-            
-            #printArea {
-                display: block !important;
-                width: 58mm;
-                margin: 0;
-                padding: 0;
-            }
-            
-            .etiqueta {
-                page-break-inside: avoid;
-                page-break-after: avoid;
-                page-break-before: avoid;
-                display: block !important;
-            }
-        }
-
-        .etiqueta {
-            width: 58mm;
-            padding: 4mm 2mm;
-            font-family: Arial, sans-serif;
-            border-bottom: 1px dashed #ccc;
-            border-left: 2px solid #000;
-            box-sizing: border-box;
-            margin-bottom: 5mm;
-        }
-
-        .etiqueta-produto {
-            font-size: 9pt;
-            font-weight: bold;
-            margin-bottom: 3mm;
-            line-height: 1.3;
-            max-height: 2.6em;
-            overflow: hidden;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            text-overflow: ellipsis;
-            word-wrap: break-word;
-        }
-
-        .etiqueta-preco {
-            font-size: 32pt;
-            font-weight: 900;
-            color: #000;
-            line-height: 1.1;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🏷️ Sistema de Impressão de Etiquetas 58mm</h1>
-        
-        <div class="info">
-            <p><strong>Instruções:</strong> Preencha os produtos e preços manualmente ou importe um arquivo CSV/Excel com 2 colunas (Produto, Preço).</p>
+        <h1>🏷️ Gerador de Etiquetas de Preço</h1>
+
+        <div class="buttons">
+            <button class="btn-add" onclick="addRow()">
+                ➕ Adicionar Linha
+            </button>
+            <label class="file-label">
+                📤 Carregar Excel
+                <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="loadExcel(event)">
+            </label>
+            <button class="btn-pdf" onclick="generatePDF()">
+                📄 Gerar PDF
+            </button>
         </div>
 
-        <div class="table-container">
-            <table id="produtosTable">
-                <thead>
-                    <tr>
-                        <th style="width: 60%;">Nome do Produto</th>
-                        <th style="width: 40%;">Preço (R$)</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody">
-                    <tr>
-                        <td><input type="text" class="produto" placeholder="Ex: Café Pilão 500g" oninput="updatePreview()"></td>
-                        <td><input type="text" class="preco" placeholder="Ex: 15,90" oninput="updatePreview()"></td>
-                    </tr>
-                    <tr>
-                        <td><input type="text" class="produto" placeholder="Ex: Açúcar Cristal 1kg" oninput="updatePreview()"></td>
-                        <td><input type="text" class="preco" placeholder="Ex: 4,50" oninput="updatePreview()"></td>
-                    </tr>
-                    <tr>
-                        <td><input type="text" class="produto" placeholder="Ex: Arroz Tio João 5kg" oninput="updatePreview()"></td>
-                        <td><input type="text" class="preco" placeholder="Ex: 28,90" oninput="updatePreview()"></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+        <table id="itemsTable">
+            <thead>
+                <tr>
+                    <th class="col-nome">Nome do Produto</th>
+                    <th class="col-preco">Preço (R$)</th>
+                    <th class="col-acoes">Ações</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <tr>
+                    <td><input type="text" placeholder="Nome do produto" class="input-nome"></td>
+                    <td><input type="text" placeholder="0.00" class="input-preco"></td>
+                    <td class="col-acoes">
+                        <button class="btn-remove" onclick="removeRow(this)" disabled>✕</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
 
-        <div class="btn-container">
-            <button class="btn-add" onclick="addRow()">➕ Adicionar Linha</button>
-            
-            <div class="file-input-wrapper">
-                <label for="fileInput" class="file-label">📁 Importar Tabela (CSV/Excel)</label>
-                <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" onchange="importFile(event)">
-            </div>
-            
-            <button class="btn-print" onclick="printLabels()">🖨️ Imprimir Etiquetas</button>
-        </div>
-
-        <div class="preview-section">
-            <h2 class="preview-title">📋 Pré-visualização das Etiquetas</h2>
-            <div class="preview-container" id="previewContainer"></div>
+        <div class="instructions">
+            <h3>📋 Instruções:</h3>
+            <ul>
+                <li>Preencha a tabela com nome e preço dos produtos</li>
+                <li>O Excel deve ter 2 colunas: Nome e Preço (primeira linha é cabeçalho)</li>
+                <li>As etiquetas terão 50x30mm em PDF de 58mm de largura</li>
+                <li>Use ponto ou vírgula para decimais (ex: 10.50 ou 10,50)</li>
+            </ul>
         </div>
     </div>
 
-    <div id="printArea" style="display: none;"></div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    
     <script>
         function addRow() {
             const tbody = document.getElementById('tableBody');
-            const newRow = document.createElement('tr');
-            newRow.innerHTML = `
-                <td><input type="text" class="produto" placeholder="Nome do produto" oninput="updatePreview()"></td>
-                <td><input type="text" class="preco" placeholder="Preço" oninput="updatePreview()"></td>
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="text" placeholder="Nome do produto" class="input-nome"></td>
+                <td><input type="text" placeholder="0.00" class="input-preco"></td>
+                <td class="col-acoes">
+                    <button class="btn-remove" onclick="removeRow(this)">✕</button>
+                </td>
             `;
-            tbody.appendChild(newRow);
-            updatePreview();
+            tbody.appendChild(row);
+            updateRemoveButtons();
         }
 
-        function importFile(event) {
+        function removeRow(btn) {
+            const tbody = document.getElementById('tableBody');
+            if (tbody.children.length > 1) {
+                btn.closest('tr').remove();
+                updateRemoveButtons();
+            }
+        }
+
+        function updateRemoveButtons() {
+            const tbody = document.getElementById('tableBody');
+            const buttons = tbody.querySelectorAll('.btn-remove');
+            buttons.forEach(btn => {
+                btn.disabled = tbody.children.length === 1;
+            });
+        }
+
+        function loadExcel(event) {
             const file = event.target.files[0];
             if (!file) return;
 
-            const fileName = file.name.toLowerCase();
-            
-            if (fileName.endsWith('.csv')) {
-                Papa.parse(file, {
-                    complete: function(results) {
-                        populateTable(results.data);
-                    },
-                    skipEmptyLines: true
-                });
-            } else if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
                     const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, {type: 'array'});
+                    const workbook = XLSX.read(data, { type: 'array' });
                     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
-                    populateTable(jsonData);
-                };
-                reader.readAsArrayBuffer(file);
-            }
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+                    const tbody = document.getElementById('tableBody');
+                    tbody.innerHTML = '';
+
+                    const rows = jsonData.slice(1).filter(row => row[0] || row[1]);
+                    
+                    if (rows.length === 0) {
+                        addRow();
+                        return;
+                    }
+
+                    rows.forEach(row => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td><input type="text" placeholder="Nome do produto" class="input-nome" value="${row[0] || ''}"></td>
+                            <td><input type="text" placeholder="0.00" class="input-preco" value="${row[1] || ''}"></td>
+                            <td class="col-acoes">
+                                <button class="btn-remove" onclick="removeRow(this)">✕</button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+
+                    updateRemoveButtons();
+                } catch (error) {
+                    alert('Erro ao ler arquivo Excel: ' + error.message);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+            event.target.value = '';
         }
 
-        function populateTable(data) {
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
             const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = '';
+            const rows = tbody.querySelectorAll('tr');
             
-            let startIndex = 0;
-            if (data[0] && (typeof data[0][0] === 'string' && data[0][0].toLowerCase().includes('produto'))) {
-                startIndex = 1;
-            }
-            
-            for (let i = startIndex; i < data.length; i++) {
-                if (data[i] && data[i].length >= 2 && data[i][0] && data[i][1]) {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td><input type="text" class="produto" value="${data[i][0]}" oninput="updatePreview()"></td>
-                        <td><input type="text" class="preco" value="${data[i][1]}" oninput="updatePreview()"></td>
-                    `;
-                    tbody.appendChild(row);
+            const items = [];
+            rows.forEach(row => {
+                const nome = row.querySelector('.input-nome').value;
+                const preco = row.querySelector('.input-preco').value;
+                if (nome.trim() || preco.trim()) {
+                    items.push({ nome, preco });
                 }
-            }
-            
-            alert(`${tbody.children.length} produtos importados com sucesso!`);
-            updatePreview();
-        }
+            });
 
-        function updatePreview() {
-            const rows = document.getElementById('tableBody').getElementsByTagName('tr');
-            const previewContainer = document.getElementById('previewContainer');
-            
-            previewContainer.innerHTML = '';
-            
-            for (let i = 0; i < rows.length; i++) {
-                const produtoInput = rows[i].querySelector('.produto');
-                const precoInput = rows[i].querySelector('.preco');
-                
-                if (produtoInput && precoInput) {
-                    const produto = produtoInput.value.trim();
-                    const preco = precoInput.value.trim();
-                    
-                    const etiqueta = document.createElement('div');
-                    etiqueta.className = 'etiqueta-preview';
-                    
-                    if (produto || preco) {
-                        etiqueta.innerHTML = `
-                            <div class="etiqueta-produto">${produto || '(vazio)'}</div>
-                            <div class="etiqueta-preco">R$ ${preco || '0,00'}</div>
-                        `;
-                    } else {
-                        etiqueta.classList.add('empty');
-                        etiqueta.innerHTML = `
-                            <div class="etiqueta-produto">(vazio)</div>
-                            <div class="etiqueta-preco">R$ 0,00</div>
-                        `;
-                    }
-                    
-                    previewContainer.appendChild(etiqueta);
-                }
-            }
-        }
-
-        function printLabels() {
-            const rows = document.getElementById('tableBody').getElementsByTagName('tr');
-            const printArea = document.getElementById('printArea');
-            
-            printArea.innerHTML = '';
-            let count = 0;
-            
-            for (let i = 0; i < rows.length; i++) {
-                const produtoInput = rows[i].querySelector('.produto');
-                const precoInput = rows[i].querySelector('.preco');
-                
-                if (produtoInput && precoInput) {
-                    const produto = produtoInput.value.trim();
-                    const preco = precoInput.value.trim();
-                    
-                    if (produto && preco) {
-                        const etiqueta = document.createElement('div');
-                        etiqueta.className = 'etiqueta';
-                        etiqueta.innerHTML = `
-                            <div class="etiqueta-produto">${produto}</div>
-                            <div class="etiqueta-preco">R$ ${preco}</div>
-                        `;
-                        printArea.appendChild(etiqueta);
-                        count++;
-                    }
-                }
-            }
-            
-            if (count === 0) {
-                alert('Preencha pelo menos um produto e preço para imprimir!');
+            if (items.length === 0) {
+                alert('Adicione pelo menos um item para gerar o PDF');
                 return;
             }
-            
-            setTimeout(() => {
-                window.print();
-            }, 300);
+
+            const labelWidth = 50;
+            const labelHeight = 30;
+            const pageWidth = 58;
+            const pageHeight = labelHeight * items.length;
+
+            const doc = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: [pageWidth, pageHeight]
+            });
+
+            items.forEach((item, index) => {
+                const yOffset = index * labelHeight;
+                const xCenter = pageWidth / 2;
+                const xStart = (pageWidth - labelWidth) / 2;
+
+                // Borda da etiqueta
+                doc.setDrawColor(200);
+                doc.setLineWidth(0.1);
+                doc.rect(xStart, yOffset, labelWidth, labelHeight);
+
+                // Nome do produto (2 linhas pequenas)
+                doc.setFontSize(7);
+                doc.setFont('helvetica', 'normal');
+                
+                const nomeLines = doc.splitTextToSize(item.nome, labelWidth - 4);
+                const displayLines = nomeLines.slice(0, 2);
+                
+                displayLines.forEach((line, i) => {
+                    doc.text(line, xCenter, yOffset + 4 + (i * 2.5), { align: 'center' });
+                });
+
+                // Preço
+                const precoStr = item.preco.replace(',', '.');
+                const precoNum = parseFloat(precoStr);
+                
+                if (!isNaN(precoNum)) {
+                    const [reais, centavos] = precoNum.toFixed(2).split('.');
+                    
+                    // R$
+                    doc.setFontSize(10);
+                    doc.setFont('helvetica', 'bold');
+                    const rsWidth = doc.getTextWidth('R$');
+                    
+                    // Valor (reais)
+                    doc.setFontSize(20);
+                    const reaisWidth = doc.getTextWidth(reais);
+                    
+                    // Centavos
+                    doc.setFontSize(10);
+                    const centavosWidth = doc.getTextWidth(centavos);
+                    
+                    // Calcular posição para centralizar
+                    const totalWidth = rsWidth + 1 + reaisWidth + 0.5 + centavosWidth;
+                    let xPos = xCenter - (totalWidth / 2);
+                    
+                    // Desenhar R$
+                    doc.setFontSize(10);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text('R$', xPos, yOffset + 20);
+                    xPos += rsWidth + 1;
+                    
+                    // Desenhar valor
+                    doc.setFontSize(20);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(reais, xPos, yOffset + 20);
+                    xPos += reaisWidth + 0.5;
+                    
+                    // Desenhar centavos
+                    doc.setFontSize(10);
+                    doc.setFont('helvetica', 'normal');
+                    doc.text(centavos, xPos, yOffset + 20);
+                } else {
+                    // Se não for número válido, mostrar texto original
+                    doc.setFontSize(14);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(item.preco, xCenter, yOffset + 20, { align: 'center' });
+                }
+            });
+
+            doc.save('etiquetas.pdf');
         }
 
-        window.onload = function() {
-            updatePreview();
-        };
+        // Inicializar
+        updateRemoveButtons();
     </script>
 </body>
 </html>
