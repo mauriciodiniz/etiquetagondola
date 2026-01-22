@@ -225,55 +225,65 @@
 
         /* Estilos para impressão */
         @media print {
-            @page {
-                size: 5cm 3cm;
-                margin: 0;
+
+                body {
+                    margin: 0 !important;
+                    padding: 0 !important;
+                    background: white;
+                }
+
+                body * {
+                    visibility: hidden;
+                }
+
+                #area-impressao,
+                #area-impressao * {
+                    visibility: visible;
+                }
+
+                #area-impressao {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 50mm;
+                }
+
+                .etiqueta-produto {
+                    width: 50mm;
+                    height: 30mm;
+                    padding: 2mm;
+                    border: none;
+                    box-sizing: border-box;
+
+                    display: block;
+                    page-break-after: always;
+                    overflow: hidden;
+                }
+
+                .nome-produto {
+                    font-size: 9px;
+                    line-height: 1.2;
+                    max-height: 12mm;
+                    overflow: hidden;
+                }
+
+                .area-preco {
+                    margin-top: 2mm;
+                    display: block;
+                }
+
+                .simbolo-real {
+                    font-size: 10px;
+                    vertical-align: top;
+                }
+
+                .valor-preco {
+                    font-size: 26px;
+                    font-weight: bold;
+                    line-height: 1;
+                }
             }
 
-            * {
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-            }
-
-            body {
-                margin: 0;
-                padding: 0;
-                background: white;
-            }
-
-            body * {
-                visibility: hidden;
-            }
-
-            #area-impressao,
-            #area-impressao * {
-                visibility: visible;
-            }
-
-            #area-impressao {
-                position: absolute;
-                left: 0;
-                top: 0;
-                margin: 0;
-                padding: 0;
-                width: 100%;
-            }
-
-            .no-print {
-                display: none !important;
-            }
-
-            .etiqueta-produto {
-                page-break-after: always;
-                page-break-inside: avoid;
-                margin: 0 !important;
-                float: none !important;
-            }
-
-            .etiqueta-produto:last-child {
-                page-break-after: auto;
-            }
-        }
 
         /* Estilos das etiquetas */
         .etiqueta-produto {
@@ -614,14 +624,14 @@
             
             produtosPreenchidos.forEach(produto => {
                 html += `
-                    <div class="etiqueta-produto">
-                        <div class="nome-produto">${produto.nome}</div>
-                        <div class="area-preco">
-                            <span class="simbolo-real">R$</span>
-                            <span class="valor-preco">${produto.preco}</span>
-                        </div>
+                <div class="etiqueta-produto">
+                    <div class="nome-produto">${produto.nome}</div>
+                    <div class="area-preco">
+                        <span class="simbolo-real">R$</span>
+                        <span class="valor-preco">${produto.preco}</span>
                     </div>
-                `;
+                </div>
+            `;
             });
             
             return html;
