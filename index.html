@@ -154,6 +154,49 @@
             line-height: 1.6;
         }
 
+        .preview-section {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #e2e8f0;
+        }
+
+        .preview-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .preview-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(58mm, 1fr));
+            gap: 15px;
+            justify-items: center;
+        }
+
+        .etiqueta-preview {
+            width: 58mm;
+            padding: 4mm 2mm;
+            font-family: Arial, sans-serif;
+            border: 2px solid #cbd5e0;
+            border-radius: 8px;
+            box-sizing: border-box;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+
+        .etiqueta-preview:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+        }
+
+        .etiqueta-preview.empty {
+            opacity: 0.3;
+            border-style: dashed;
+        }
+
         @media print {
             @page {
                 size: 58mm auto;
@@ -234,16 +277,16 @@
                 </thead>
                 <tbody id="tableBody">
                     <tr>
-                        <td><input type="text" class="produto" placeholder="Ex: Café Pilão 500g"></td>
-                        <td><input type="text" class="preco" placeholder="Ex: 15,90"></td>
+                        <td><input type="text" class="produto" placeholder="Ex: Café Pilão 500g" oninput="updatePreview()"></td>
+                        <td><input type="text" class="preco" placeholder="Ex: 15,90" oninput="updatePreview()"></td>
                     </tr>
                     <tr>
-                        <td><input type="text" class="produto" placeholder="Ex: Açúcar Cristal 1kg"></td>
-                        <td><input type="text" class="preco" placeholder="Ex: 4,50"></td>
+                        <td><input type="text" class="produto" placeholder="Ex: Açúcar Cristal 1kg" oninput="updatePreview()"></td>
+                        <td><input type="text" class="preco" placeholder="Ex: 4,50" oninput="updatePreview()"></td>
                     </tr>
                     <tr>
-                        <td><input type="text" class="produto" placeholder="Ex: Arroz Tio João 5kg"></td>
-                        <td><input type="text" class="preco" placeholder="Ex: 28,90"></td>
+                        <td><input type="text" class="produto" placeholder="Ex: Arroz Tio João 5kg" oninput="updatePreview()"></td>
+                        <td><input type="text" class="preco" placeholder="Ex: 28,90" oninput="updatePreview()"></td>
                     </tr>
                 </tbody>
             </table>
@@ -259,6 +302,11 @@
             
             <button class="btn-print" onclick="printLabels()">🖨️ Imprimir Etiquetas</button>
         </div>
+
+        <div class="preview-section">
+            <h2 class="preview-title">📋 Pré-visualização das Etiquetas</h2>
+            <div class="preview-container" id="previewContainer"></div>
+        </div>
     </div>
 
     <div id="printArea" style="display: none;"></div>
@@ -271,10 +319,11 @@
             const tbody = document.getElementById('tableBody');
             const newRow = document.createElement('tr');
             newRow.innerHTML = `
-                <td><input type="text" class="produto" placeholder="Nome do produto"></td>
-                <td><input type="text" class="preco" placeholder="Preço"></td>
+                <td><input type="text" class="produto" placeholder="Nome do produto" oninput="updatePreview()"></td>
+                <td><input type="text" class="preco" placeholder="Preço" oninput="updatePreview()"></td>
             `;
             tbody.appendChild(newRow);
+            updatePreview();
         }
 
         function importFile(event) {
@@ -316,14 +365,50 @@
                 if (data[i] && data[i].length >= 2 && data[i][0] && data[i][1]) {
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td><input type="text" class="produto" value="${data[i][0]}"></td>
-                        <td><input type="text" class="preco" value="${data[i][1]}"></td>
+                        <td><input type="text" class="produto" value="${data[i][0]}" oninput="updatePreview()"></td>
+                        <td><input type="text" class="preco" value="${data[i][1]}" oninput="updatePreview()"></td>
                     `;
                     tbody.appendChild(row);
                 }
             }
             
             alert(`${tbody.children.length} produtos importados com sucesso!`);
+            updatePreview();
+        }
+
+        function updatePreview() {
+            const rows = document.getElementById('tableBody').getElementsByTagName('tr');
+            const previewContainer = document.getElementById('previewContainer');
+            
+            previewContainer.innerHTML = '';
+            
+            for (let i = 0; i < rows.length; i++) {
+                const produtoInput = rows[i].querySelector('.produto');
+                const precoInput = rows[i].querySelector('.preco');
+                
+                if (produtoInput && precoInput) {
+                    const produto = produtoInput.value.trim();
+                    const preco = precoInput.value.trim();
+                    
+                    const etiqueta = document.createElement('div');
+                    etiqueta.className = 'etiqueta-preview';
+                    
+                    if (produto || preco) {
+                        etiqueta.innerHTML = `
+                            <div class="etiqueta-produto">${produto || '(vazio)'}</div>
+                            <div class="etiqueta-preco">R$ ${preco || '0,00'}</div>
+                        `;
+                    } else {
+                        etiqueta.classList.add('empty');
+                        etiqueta.innerHTML = `
+                            <div class="etiqueta-produto">(vazio)</div>
+                            <div class="etiqueta-preco">R$ 0,00</div>
+                        `;
+                    }
+                    
+                    previewContainer.appendChild(etiqueta);
+                }
+            }
         }
 
         function printLabels() {
@@ -359,12 +444,14 @@
                 return;
             }
             
-            alert(`${count} etiqueta(s) preparada(s) para impressão!`);
-            
             setTimeout(() => {
                 window.print();
             }, 300);
         }
+
+        window.onload = function() {
+            updatePreview();
+        };
     </script>
 </body>
 </html>
