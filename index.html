@@ -197,9 +197,8 @@
             font-family: Arial, sans-serif;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            page-break-after: always;
         }
+
 
         .etiqueta-50 .produto {
             font-size: 7pt;
@@ -210,17 +209,24 @@
         }
 
         .etiqueta-50 .preco {
-            font-size: 20pt;
-            font-weight: bold;
-            text-align: center;
-            line-height: 1;
-        }
+        margin-top: auto;        /* empurra para baixo */
+        font-size: 20pt;
+        font-weight: bold;
+        text-align: center;
+        line-height: 1;
+    }
+
+
 
         /* Ajustes específicos para impressão térmica */
         @media print {
             #printArea {
                 width: 50mm;
             }
+        }
+                @page {
+            size: 50mm 30mm;
+            margin: 0;
         }
     </style>
 </head>
