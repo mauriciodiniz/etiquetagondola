@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Etiquetas de Produtos</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <title>Impressão de Etiquetas 58mm</title>
     <style>
         * {
             margin: 0;
@@ -13,40 +12,35 @@
         }
 
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f9fafb;
-            padding: 12px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 900px;
             margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 30px;
         }
 
         h1 {
-            color: #1f2937;
-            font-size: 1.5rem;
-            margin-bottom: 16px;
-        }
-
-        .card {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            padding: 16px;
-            margin-bottom: 16px;
-        }
-
-        h2 {
-            font-size: 1.1rem;
-            margin-bottom: 12px;
-            color: #374151;
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
         }
 
         .table-container {
             overflow-x: auto;
-            margin: 0 -16px;
-            padding: 0 16px;
+            margin-bottom: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
         }
 
         table {
@@ -54,625 +48,325 @@
             border-collapse: collapse;
         }
 
+        thead {
+            background: #667eea;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
         th {
-            background-color: #f3f4f6;
-            border: 1px solid #d1d5db;
-            padding: 8px 6px;
+            padding: 15px;
             text-align: left;
             font-weight: 600;
-            font-size: 13px;
         }
 
         td {
-            border: 1px solid #d1d5db;
-            padding: 6px;
-            vertical-align: top;
-        }
-
-        td.numero-linha {
-            text-align: center;
-            font-weight: 500;
-            color: #6b7280;
-            width: 35px;
-            font-size: 13px;
-        }
-
-        td.preco-cell {
-            width: 80px;
-        }
-
-        td.acoes-cell {
-            width: 40px;
-            text-align: center;
-            padding: 4px;
-        }
-
-        tr:hover {
-            background-color: #f9fafb;
+            padding: 10px 15px;
+            border-bottom: 1px solid #eee;
         }
 
         input[type="text"] {
             width: 100%;
-            padding: 6px;
-            border: 1px solid #d1d5db;
-            border-radius: 4px;
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
             font-size: 14px;
+            transition: all 0.3s;
         }
 
         input[type="text"]:focus {
             outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
-        .nome-preview {
-            font-size: 10px;
-            line-height: 1.2;
-            max-height: 1.4cm;
-            overflow: hidden;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            word-wrap: break-word;
-            min-height: 24px;
-            color: #374151;
-            margin-top: 4px;
-            padding: 4px;
-            background-color: #f9fafb;
-            border-radius: 3px;
-            border: 1px solid #e5e7eb;
-        }
-
-        .btn {
-            padding: 10px 14px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: background-color 0.2s;
-            width: 100%;
-            margin-bottom: 8px;
-        }
-
-        .btn-primary {
-            background-color: #2563eb;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: #1d4ed8;
-        }
-
-        .btn-success {
-            background-color: #16a34a;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background-color: #15803d;
-        }
-
-        .btn-purple {
-            background-color: #9333ea;
-            color: white;
-        }
-
-        .btn-purple:hover {
-            background-color: #7e22ce;
-        }
-
-        .btn-remove {
-            background-color: #ef4444;
-            color: white;
-            width: 32px;
-            height: 32px;
-            border-radius: 4px;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
+        .btn-container {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 20px;
         }
 
-        .btn-remove:hover {
-            background-color: #dc2626;
-        }
-
-        .btn:disabled,
-        .btn-remove:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .button-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0;
-            margin-top: 16px;
-        }
-
-        .info-box {
-            background-color: #fef3c7;
-            border: 1px solid #fde68a;
+        button, .file-label {
+            padding: 12px 24px;
+            border: none;
             border-radius: 8px;
-            padding: 12px;
-        }
-
-        .info-box h3 {
-            color: #92400e;
+            font-size: 16px;
             font-weight: 600;
-            margin-bottom: 8px;
-            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-block;
         }
 
-        .info-box ul {
-            color: #78350f;
-            font-size: 13px;
-            list-style-position: inside;
+        .btn-print {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            flex: 1;
         }
 
-        .info-box li {
-            margin: 4px 0;
+        .btn-print:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-add {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-add:hover {
+            background: #38a169;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            flex: 1;
+        }
+
+        .file-label {
+            background: #ed8936;
+            color: white;
+            text-align: center;
+            width: 100%;
+        }
+
+        .file-label:hover {
+            background: #dd6b20;
         }
 
         input[type="file"] {
             display: none;
         }
 
-        /* Estilos para impressão */
-        @media print {
-
-                body {
-                    margin: 0 !important;
-                    padding: 0 !important;
-                    background: white;
-                }
-
-                body * {
-                    visibility: hidden;
-                }
-
-                #area-impressao,
-                #area-impressao * {
-                    visibility: visible;
-                }
-
-                #area-impressao {
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    width: 50mm;
-                }
-
-                .etiqueta-produto {
-                    width: 50mm;
-                    height: 30mm;
-                    padding: 2mm;
-                    border: none;
-                    box-sizing: border-box;
-
-                    display: block;
-                    page-break-after: always;
-                    overflow: hidden;
-                }
-
-                .nome-produto {
-                    font-size: 9px;
-                    line-height: 1.2;
-                    max-height: 12mm;
-                    overflow: hidden;
-                }
-
-                .area-preco {
-                    margin-top: 2mm;
-                    display: block;
-                }
-
-                .simbolo-real {
-                    font-size: 10px;
-                    vertical-align: top;
-                }
-
-                .valor-preco {
-                    font-size: 26px;
-                    font-weight: bold;
-                    line-height: 1;
-                }
-            }
-
-
-        /* Estilos das etiquetas */
-        .etiqueta-produto {
-            width: 5cm;
-            height: 3cm;
-            border: 1px solid #ddd;
-            padding: 0.3cm;
-            box-sizing: border-box;
-            background: white;
-            display: inline-flex;
-            flex-direction: column;
-            justify-content: space-between;
-            margin: 0.2cm;
-            float: left;
+        .info {
+            background: #ebf8ff;
+            border-left: 4px solid #4299e1;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
         }
 
-        .nome-produto {
-            font-size: 10px;
-            line-height: 1.2;
-            max-height: 1.4cm;
-            overflow: hidden;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
+        .info p {
+            color: #2c5282;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            
+            #printArea, #printArea * {
+                visibility: visible;
+            }
+            
+            #printArea {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 58mm;
+            }
+        }
+
+        .etiqueta {
+            width: 58mm;
+            padding: 3mm;
+            page-break-after: always;
+            font-family: Arial, sans-serif;
+        }
+
+        .etiqueta-produto {
+            font-size: 12pt;
+            font-weight: bold;
+            margin-bottom: 2mm;
             word-wrap: break-word;
         }
 
-        .area-preco {
-            display: flex;
-            align-items: flex-end;
-            gap: 0.2cm;
-        }
-
-        .simbolo-real {
-            font-size: 14px;
-            font-weight: normal;
-            align-self: flex-start;
-        }
-
-        .valor-preco {
-            font-size: 28px;
+        .etiqueta-preco {
+            font-size: 16pt;
             font-weight: bold;
+        }
+
+        .etiqueta-50 {
+            width: 50mm;
+            height: 30mm;
+            padding: 2mm;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            page-break-after: always;
+        }
+
+        .etiqueta-50 .produto {
+            font-size: 7pt;
+            font-weight: normal;
+            line-height: 1.2;
+            max-height: 8mm; /* duas linhas pequenas */
+            overflow: hidden;
+        }
+
+        .etiqueta-50 .preco {
+            font-size: 20pt;
+            font-weight: bold;
+            text-align: center;
             line-height: 1;
         }
 
-        #area-impressao {
-            display: none;
-        }
-
-        /* Responsivo para tablets */
-        @media (min-width: 640px) {
-            body {
-                padding: 20px;
+        /* Ajustes específicos para impressão térmica */
+        @media print {
+            #printArea {
+                width: 50mm;
             }
-
-            h1 {
-                font-size: 2rem;
-                margin-bottom: 24px;
-            }
-
-            h2 {
-                font-size: 1.25rem;
-                margin-bottom: 16px;
-            }
-
-            .card {
-                padding: 24px;
-                margin-bottom: 24px;
-            }
-
-            .button-group {
-                flex-direction: row;
-                flex-wrap: wrap;
-                gap: 12px;
-            }
-
-            .btn {
-                width: auto;
-                margin-bottom: 0;
-            }
-
-            .info-box {
-                padding: 16px;
-            }
-
-            td.numero-linha {
-                width: 50px;
-            }
-
-            td.preco-cell {
-                width: 120px;
-            }
-
-            td.acoes-cell {
-                width: 50px;
-            }
-        }
-
-        /* Modal de preview */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 1000;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .modal-overlay.active {
-            display: block;
-        }
-
-        .modal-content {
-            background: white;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            position: sticky;
-            top: 0;
-            background: white;
-            padding: 10px 0;
-            border-bottom: 2px solid #e5e7eb;
-            z-index: 10;
-        }
-
-        .modal-header h2 {
-            margin: 0;
-        }
-
-        .btn-close {
-            background: #6b7280;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .preview-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, 5cm);
-            gap: 0.3cm;
-            justify-content: center;
-            padding: 20px 0;
-        }
-
-        .btn-print-mobile {
-            position: sticky;
-            bottom: 20px;
-            margin-top: 20px;
         }
     </style>
 </head>
 <body>
-    <div class="container no-print">
-        <h1>Gerador de Etiquetas de Produtos</h1>
+    <div class="container">
+        <h1>🏷️ Sistema de Impressão de Etiquetas 58mm</h1>
+        
+        <div class="info">
+            <p><strong>Instruções:</strong> Preencha os produtos e preços manualmente ou importe um arquivo CSV/Excel com 2 colunas (Produto, Preço).</p>
+        </div>
 
-        <div class="card">
-            <h2>Produtos</h2>
+        <div class="table-container">
+            <table id="produtosTable">
+                <thead>
+                    <tr>
+                        <th style="width: 60%;">Nome do Produto</th>
+                        <th style="width: 40%;">Preço (R$)</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr>
+                        <td><input type="text" class="produto" placeholder="Ex: Café Pilão 500g"></td>
+                        <td><input type="text" class="preco" placeholder="Ex: 15,90"></td>
+                    </tr>
+                    <tr>
+                        <td><input type="text" class="produto" placeholder="Ex: Açúcar Cristal 1kg"></td>
+                        <td><input type="text" class="preco" placeholder="Ex: 4,50"></td>
+                    </tr>
+                    <tr>
+                        <td><input type="text" class="produto" placeholder="Ex: Arroz Tio João 5kg"></td>
+                        <td><input type="text" class="preco" placeholder="Ex: 28,90"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="btn-container">
+            <button class="btn-add" onclick="addRow()">➕ Adicionar Linha</button>
             
-            <div class="table-container">
-                <table id="tabela-produtos">
-                    <thead>
-                        <tr>
-                            <th style="width: 35px;">#</th>
-                            <th>Nome do Produto</th>
-                            <th style="width: 80px;">Preço</th>
-                            <th style="width: 40px;"></th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbody-produtos">
-                    </tbody>
-                </table>
+            <div class="file-input-wrapper">
+                <label for="fileInput" class="file-label">📁 Importar Tabela (CSV/Excel)</label>
+                <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" onchange="importFile(event)">
             </div>
-
-            <div class="button-group">
-                <button class="btn btn-primary" onclick="adicionarLinha()">+ Adicionar Linha</button>
-                <label class="btn btn-success">
-                    📁 Importar Excel
-                    <input type="file" id="input-excel" accept=".xlsx,.xls" onchange="importarExcel(event)">
-                </label>
-                <button class="btn btn-purple" onclick="abrirPreview()" id="btn-preview">
-                    👁️ Visualizar Etiquetas (0)
-                </button>
-            </div>
-        </div>
-
-        <div class="info-box">
-            <h3>📋 Instruções:</h3>
-            <ul>
-                <li>• Preencha nome e preço na tabela</li>
-                <li>• Ou importe Excel com 2 colunas</li>
-                <li>• Veja prévia abaixo do nome</li>
-                <li>• Clique em "Visualizar Etiquetas"</li>
-                <li>• Use "Compartilhar" ou "Imprimir" do navegador</li>
-            </ul>
+            
+            <button class="btn-print" onclick="printLabels()">🖨️ Imprimir Etiquetas</button>
         </div>
     </div>
 
-    <!-- Modal de Preview -->
-    <div id="modal-preview" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Preview das Etiquetas</h2>
-                <button class="btn-close" onclick="fecharPreview()">✕ Fechar</button>
-            </div>
-            <div id="preview-grid" class="preview-grid"></div>
-            <button class="btn btn-purple btn-print-mobile" onclick="imprimirEtiquetas()">
-                🖨️ Imprimir Agora
-            </button>
-        </div>
-    </div>
+    <div id="printArea" style="display: none;"></div>
 
-    <!-- Área de impressão (oculta) -->
-    <div id="area-impressao"></div>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
     <script>
-        let produtos = [];
-
-        function inicializar() {
-            for (let i = 0; i < 5; i++) {
-                produtos.push({ nome: '', preco: '' });
-            }
-            renderizarTabela();
+        function addRow() {
+            const tbody = document.getElementById('tableBody');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td><input type="text" class="produto" placeholder="Nome do produto"></td>
+                <td><input type="text" class="preco" placeholder="Preço"></td>
+            `;
+            tbody.appendChild(newRow);
         }
 
-        function renderizarTabela() {
-            const tbody = document.getElementById('tbody-produtos');
-            tbody.innerHTML = '';
-
-            produtos.forEach((produto, index) => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="numero-linha">${index + 1}</td>
-                    <td>
-                        <input type="text" 
-                               value="${produto.nome}" 
-                               onchange="atualizarProduto(${index}, 'nome', this.value)"
-                               oninput="atualizarPreview(${index}, this.value)"
-                               placeholder="Nome do produto">
-                        <div class="nome-preview" id="preview-${index}">${produto.nome || '&nbsp;'}</div>
-                    </td>
-                    <td class="preco-cell">
-                        <input type="text" 
-                               value="${produto.preco}" 
-                               onchange="atualizarProduto(${index}, 'preco', this.value)"
-                               placeholder="0,00">
-                    </td>
-                    <td class="acoes-cell">
-                        <button class="btn-remove" 
-                                onclick="removerLinha(${index})"
-                                ${produtos.length === 1 ? 'disabled' : ''}
-                                title="Remover linha">
-                            ×
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            atualizarBotaoPreview();
-        }
-
-        function atualizarPreview(index, valor) {
-            const preview = document.getElementById(`preview-${index}`);
-            preview.textContent = valor || '\u00A0';
-        }
-
-        function atualizarProduto(index, campo, valor) {
-            produtos[index][campo] = valor;
-            atualizarBotaoPreview();
-        }
-
-        function adicionarLinha() {
-            produtos.push({ nome: '', preco: '' });
-            renderizarTabela();
-        }
-
-        function removerLinha(index) {
-            if (produtos.length > 1) {
-                produtos.splice(index, 1);
-                renderizarTabela();
-            }
-        }
-
-        function importarExcel(event) {
+        function importFile(event) {
             const file = event.target.files[0];
             if (!file) return;
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
+            const fileName = file.name.toLowerCase();
+            
+            if (fileName.endsWith('.csv')) {
+                Papa.parse(file, {
+                    complete: function(results) {
+                        populateTable(results.data);
+                    },
+                    skipEmptyLines: true
+                });
+            } else if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
                     const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
+                    const workbook = XLSX.read(data, {type: 'array'});
                     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-
-                    const produtosImportados = jsonData
-                        .filter(row => row[0] || row[1])
-                        .map(row => ({
-                            nome: String(row[0] || ''),
-                            preco: String(row[1] || '')
-                        }));
-
-                    if (produtosImportados.length > 0) {
-                        produtos = produtosImportados;
-                        renderizarTabela();
-                    }
-                } catch (error) {
-                    alert('Erro ao importar arquivo Excel. Verifique se o arquivo está no formato correto.');
-                }
-            };
-            reader.readAsArrayBuffer(file);
-            event.target.value = '';
-        }
-
-        function atualizarBotaoPreview() {
-            const produtosPreenchidos = produtos.filter(p => p.nome.trim() || p.preco.trim());
-            const btnPreview = document.getElementById('btn-preview');
-            btnPreview.textContent = `👁️ Visualizar Etiquetas (${produtosPreenchidos.length})`;
-            btnPreview.disabled = produtosPreenchidos.length === 0;
-        }
-
-        function gerarEtiquetasHTML() {
-            const produtosPreenchidos = produtos.filter(p => p.nome.trim() || p.preco.trim());
-            let html = '';
-            
-            produtosPreenchidos.forEach(produto => {
-                html += `
-                <div class="etiqueta-produto">
-                    <div class="nome-produto">${produto.nome}</div>
-                    <div class="area-preco">
-                        <span class="simbolo-real">R$</span>
-                        <span class="valor-preco">${produto.preco}</span>
-                    </div>
-                </div>
-            `;
-            });
-            
-            return html;
-        }
-
-        function abrirPreview() {
-            const modal = document.getElementById('modal-preview');
-            const grid = document.getElementById('preview-grid');
-            
-            grid.innerHTML = gerarEtiquetasHTML();
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function fecharPreview() {
-            const modal = document.getElementById('modal-preview');
-            modal.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-
-        function imprimirEtiquetas() {
-            const areaImpressao = document.getElementById('area-impressao');
-            areaImpressao.innerHTML = gerarEtiquetasHTML();
-            areaImpressao.style.display = 'block';
-            
-            // Aguardar um pouco para garantir que o conteúdo foi renderizado
-            setTimeout(() => {
-                window.print();
-                areaImpressao.style.display = 'none';
-            }, 100);
-        }
-
-        // Fechar modal ao pressionar ESC
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                fecharPreview();
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
+                    populateTable(jsonData);
+                };
+                reader.readAsArrayBuffer(file);
             }
-        });
+        }
 
-        // Inicializar ao carregar a página
-        inicializar();
-    </script>
+        function populateTable(data) {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            let startIndex = 0;
+            if (data[0] && (typeof data[0][0] === 'string' && data[0][0].toLowerCase().includes('produto'))) {
+                startIndex = 1;
+            }
+            
+            for (let i = startIndex; i < data.length; i++) {
+                if (data[i] && data[i].length >= 2 && data[i][0] && data[i][1]) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><input type="text" class="produto" value="${data[i][0]}"></td>
+                        <td><input type="text" class="preco" value="${data[i][1]}"></td>
+                    `;
+                    tbody.appendChild(row);
+                }
+            }
+            
+            alert(`${tbody.children.length} produtos importados com sucesso!`);
+        }
+
+                function printLabels() {
+            const produtos = document.querySelectorAll('.produto');
+            const precos = document.querySelectorAll('.preco');
+            const printArea = document.getElementById('printArea');
+
+            printArea.innerHTML = '';
+            printArea.style.display = 'block';
+
+            let count = 0;
+
+            for (let i = 0; i < produtos.length; i++) {
+                const produto = produtos[i].value.trim();
+                const preco = precos[i].value.trim();
+
+                if (produto && preco) {
+                    const etiqueta = document.createElement('div');
+                    etiqueta.className = 'etiqueta-50';
+                    etiqueta.innerHTML = `
+                        <div class="produto">${produto}</div>
+                        <div class="preco">R$ ${preco}</div>
+                    `;
+                    printArea.appendChild(etiqueta);
+                    count++;
+                }
+            }
+
+            if (count === 0) {
+                alert('Preencha pelo menos um produto e preço para imprimir!');
+                return;
+            }
+
+            window.print();
+        }
+            </script>
 </body>
 </html>
