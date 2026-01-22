@@ -100,6 +100,16 @@
             display: inline-block;
         }
 
+        .btn-pdf {
+            background: #f56565;
+            color: white;
+            flex: 1;
+        }
+
+        .btn-pdf:hover {
+            background: #e53e3e;
+        }
+
         .btn-print {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -109,6 +119,12 @@
         .btn-print:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-print:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
         }
 
         .btn-add {
@@ -177,7 +193,7 @@
 
         .etiqueta-preview {
             width: 58mm;
-            padding: 4mm 2mm;
+            padding: 4mm 2mm 4mm 5mm;
             font-family: Arial, sans-serif;
             border: 2px solid #cbd5e0;
             border-radius: 8px;
@@ -185,6 +201,17 @@
             background: white;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             transition: all 0.3s;
+            position: relative;
+        }
+
+        .etiqueta-preview::before {
+            content: '';
+            position: absolute;
+            left: 2mm;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #333;
         }
 
         .etiqueta-preview:hover {
@@ -197,47 +224,49 @@
             border-style: dashed;
         }
 
+        .etiqueta-preview.empty::before {
+            background: #999;
+        }
+
         @media print {
             @page {
-                size: 58mm 30mm; /* MESMA ALTURA DA ETIQUETA */
+                size: 58mm auto;
                 margin: 0;
             }
-
             
-                    body {
+            body {
                 margin: 0;
                 padding: 0;
                 width: 58mm;
             }
-        
+            
             .container {
                 display: none !important;
             }
-        
+            
             #printArea {
                 display: block !important;
+                width: 58mm;
+                margin: 0;
+                padding: 0;
             }
-        
+            
             .etiqueta {
-                border: none;
+                page-break-inside: avoid;
+                page-break-after: avoid;
+                page-break-before: avoid;
+                display: block !important;
             }
-                }
-
-         .etiqueta {
-            width: 58mm;
-            height: 30mm; /* <<< ALTURA FIXA */
-            padding: 4mm 2mm;
-            font-family: Arial, sans-serif;
-            box-sizing: border-box;
-        
-            page-break-after: always;
-            break-after: page;
-        
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
         }
 
+        .etiqueta {
+            width: 58mm;
+            padding: 4mm 2mm;
+            font-family: Arial, sans-serif;
+            border-bottom: 1px dashed #ccc;
+            box-sizing: border-box;
+            margin-bottom: 5mm;
+        }
 
         .etiqueta-produto {
             font-size: 9pt;
@@ -254,8 +283,8 @@
         }
 
         .etiqueta-preco {
-            font-size: 32pt;
-            font-weight: 900;
+            font-size: 20pt;
+            font-weight: bold;
             color: #000;
             line-height: 1.1;
         }
@@ -302,7 +331,8 @@
                 <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" onchange="importFile(event)">
             </div>
             
-            <button class="btn-print" onclick="printLabels()">🖨️ Imprimir Etiquetas</button>
+            <button class="btn-pdf" onclick="generatePDF()">📄 Gerar PDF</button>
+            <button class="btn-print" id="printBtn" onclick="printPDF()" disabled>🖨️ Imprimir Etiquetas</button>
         </div>
 
         <div class="preview-section">
@@ -315,8 +345,11 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <script>
+        let currentPdfBlob = null;
+
         function addRow() {
             const tbody = document.getElementById('tableBody');
             const newRow = document.createElement('tr');
@@ -383,6 +416,8 @@
             const previewContainer = document.getElementById('previewContainer');
             
             previewContainer.innerHTML = '';
+            currentPdfBlob = null;
+            document.getElementById('printBtn').disabled = true;
             
             for (let i = 0; i < rows.length; i++) {
                 const produtoInput = rows[i].querySelector('.produto');
@@ -411,6 +446,108 @@
                     previewContainer.appendChild(etiqueta);
                 }
             }
+        }
+
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const rows = document.getElementById('tableBody').getElementsByTagName('tr');
+            
+            const etiquetas = [];
+            
+            for (let i = 0; i < rows.length; i++) {
+                const produtoInput = rows[i].querySelector('.produto');
+                const precoInput = rows[i].querySelector('.preco');
+                
+                if (produtoInput && precoInput) {
+                    const produto = produtoInput.value.trim();
+                    const preco = precoInput.value.trim();
+                    
+                    if (produto && preco) {
+                        etiquetas.push({ produto, preco });
+                    }
+                }
+            }
+            
+            if (etiquetas.length === 0) {
+                alert('Preencha pelo menos um produto e preço para gerar o PDF!');
+                return;
+            }
+            
+            // Calcular altura total necessária
+            const etiquetaHeight = 20; // altura de cada etiqueta em mm
+            const totalHeight = Math.max(297, etiquetas.length * etiquetaHeight + 10);
+            
+            const doc = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: [58, totalHeight]
+            });
+            
+            // Desenhar linha vertical contínua do início ao fim
+            doc.setDrawColor(0);
+            doc.setLineWidth(0.3);
+            doc.line(1, 0, 1, totalHeight);
+            
+            let yPosition = 5;
+            
+            etiquetas.forEach((item, index) => {
+                // Texto do produto (máximo 2 linhas)
+                doc.setFontSize(9);
+                doc.setFont(undefined, 'bold');
+                
+                const produtoLines = doc.splitTextToSize(item.produto, 53);
+                const maxLines = 2;
+                const linesToShow = produtoLines.slice(0, maxLines);
+                
+                linesToShow.forEach((line, lineIndex) => {
+                    doc.text(line, 3, yPosition + (lineIndex * 4));
+                });
+                
+                // Preço em destaque
+                doc.setFontSize(18);
+                doc.text(`R$ ${item.preco}`, 3, yPosition + 12);
+                
+                // Linha horizontal de separação tracejada (exceto na última)
+                if (index < etiquetas.length - 1) {
+                    doc.setDrawColor(200);
+                    doc.setLineWidth(0.1);
+                    doc.setLineDash([1, 1], 0);
+                    doc.line(2, yPosition + 16, 56, yPosition + 16);
+                    doc.setLineDash([], 0);
+                }
+                
+                yPosition += etiquetaHeight;
+            });
+            
+            const pdfBlob = doc.output('blob');
+            currentPdfBlob = pdfBlob;
+            
+            const url = URL.createObjectURL(pdfBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'etiquetas_58mm.pdf';
+            link.click();
+            
+            document.getElementById('printBtn').disabled = false;
+            
+            alert(`PDF gerado com ${etiquetas.length} etiqueta(s)! Arquivo baixado e pronto para impressão.`);
+        }
+
+        function printPDF() {
+            if (!currentPdfBlob) {
+                alert('Gere o PDF primeiro antes de imprimir!');
+                return;
+            }
+            
+            const url = URL.createObjectURL(currentPdfBlob);
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = url;
+            document.body.appendChild(iframe);
+            
+            iframe.onload = function() {
+                iframe.contentWindow.print();
+            };
         }
 
         function printLabels() {
