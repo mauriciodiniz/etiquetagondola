@@ -177,7 +177,7 @@
 
         .etiqueta-preview {
             width: 58mm;
-            padding: 4mm 2mm 4mm 5mm;
+            padding: 4mm 2mm;
             font-family: Arial, sans-serif;
             border: 2px solid #cbd5e0;
             border-radius: 8px;
@@ -185,17 +185,6 @@
             background: white;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             transition: all 0.3s;
-            position: relative;
-        }
-
-        .etiqueta-preview::before {
-            content: '';
-            position: absolute;
-            left: 2mm;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background: #333;
         }
 
         .etiqueta-preview:hover {
@@ -206,10 +195,6 @@
         .etiqueta-preview.empty {
             opacity: 0.3;
             border-style: dashed;
-        }
-
-        .etiqueta-preview.empty::before {
-            background: #999;
         }
 
         @media print {
@@ -245,22 +230,12 @@
 
         .etiqueta {
             width: 58mm;
-            padding: 4mm 2mm 4mm 5mm;
+            padding: 4mm 2mm;
             font-family: Arial, sans-serif;
             border-bottom: 1px dashed #ccc;
+            border-left: 2px solid #000;
             box-sizing: border-box;
             margin-bottom: 5mm;
-            position: relative;
-        }
-
-        .etiqueta::before {
-            content: '';
-            position: absolute;
-            left: 2mm;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background: #000;
         }
 
         .etiqueta-produto {
@@ -278,8 +253,8 @@
         }
 
         .etiqueta-preco {
-            font-size: 20pt;
-            font-weight: bold;
+            font-size: 32pt;
+            font-weight: 900;
             color: #000;
             line-height: 1.1;
         }
@@ -341,10 +316,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
     <script>
-        let currentPdfBlob = null;
-
-        let currentPdfBlob = null;
-
         function addRow() {
             const tbody = document.getElementById('tableBody');
             const newRow = document.createElement('tr');
@@ -442,42 +413,6 @@
         }
 
         function printLabels() {
-            const rows = document.getElementById('tableBody').getElementsByTagName('tr');
-            const printArea = document.getElementById('printArea');
-            
-            printArea.innerHTML = '';
-            let count = 0;
-            
-            for (let i = 0; i < rows.length; i++) {
-                const produtoInput = rows[i].querySelector('.produto');
-                const precoInput = rows[i].querySelector('.preco');
-                
-                if (produtoInput && precoInput) {
-                    const produto = produtoInput.value.trim();
-                    const preco = precoInput.value.trim();
-                    
-                    if (produto && preco) {
-                        const etiqueta = document.createElement('div');
-                        etiqueta.className = 'etiqueta';
-                        etiqueta.innerHTML = `
-                            <div class="etiqueta-produto">${produto}</div>
-                            <div class="etiqueta-preco">R$ ${preco}</div>
-                        `;
-                        printArea.appendChild(etiqueta);
-                        count++;
-                    }
-                }
-            }
-            
-            if (count === 0) {
-                alert('Preencha pelo menos um produto e preço para imprimir!');
-                return;
-            }
-            
-            setTimeout(() => {
-                window.print();
-            }, 300);
-        }
             const rows = document.getElementById('tableBody').getElementsByTagName('tr');
             const printArea = document.getElementById('printArea');
             
