@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Impressão de Etiquetas 58mm 2026</title>
+    <title>Impressão de Etiquetas 58mm</title>
     <style>
         * {
             margin: 0;
@@ -100,16 +100,6 @@
             display: inline-block;
         }
 
-        .btn-pdf {
-            background: #f56565;
-            color: white;
-            flex: 1;
-        }
-
-        .btn-pdf:hover {
-            background: #e53e3e;
-        }
-
         .btn-print {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -119,12 +109,6 @@
         .btn-print:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-print:disabled {
-            background: #cbd5e0;
-            cursor: not-allowed;
-            transform: none;
         }
 
         .btn-add {
@@ -268,8 +252,8 @@
         }
 
         .etiqueta-preco {
-            font-size: 20pt;
-            font-weight: bold;
+            font-size: 32pt;
+            font-weight: 900;
             color: #000;
             line-height: 1.1;
         }
@@ -316,8 +300,7 @@
                 <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" onchange="importFile(event)">
             </div>
             
-            <button class="btn-pdf" onclick="generatePDF()">📄 Gerar PDF</button>
-            <button class="btn-print" id="printBtn" onclick="printPDF()" disabled>🖨️ Imprimir Etiquetas</button>
+            <button class="btn-print" onclick="printLabels()">🖨️ Imprimir Etiquetas</button>
         </div>
 
         <div class="preview-section">
@@ -330,11 +313,8 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <script>
-        let currentPdfBlob = null;
-
         function addRow() {
             const tbody = document.getElementById('tableBody');
             const newRow = document.createElement('tr');
@@ -401,8 +381,6 @@
             const previewContainer = document.getElementById('previewContainer');
             
             previewContainer.innerHTML = '';
-            currentPdfBlob = null;
-            document.getElementById('printBtn').disabled = true;
             
             for (let i = 0; i < rows.length; i++) {
                 const produtoInput = rows[i].querySelector('.produto');
@@ -431,99 +409,6 @@
                     previewContainer.appendChild(etiqueta);
                 }
             }
-        }
-
-        function generatePDF() {
-            const { jsPDF } = window.jspdf;
-            const rows = document.getElementById('tableBody').getElementsByTagName('tr');
-            
-            const etiquetas = [];
-            
-            for (let i = 0; i < rows.length; i++) {
-                const produtoInput = rows[i].querySelector('.produto');
-                const precoInput = rows[i].querySelector('.preco');
-                
-                if (produtoInput && precoInput) {
-                    const produto = produtoInput.value.trim();
-                    const preco = precoInput.value.trim();
-                    
-                    if (produto && preco) {
-                        etiquetas.push({ produto, preco });
-                    }
-                }
-            }
-            
-            if (etiquetas.length === 0) {
-                alert('Preencha pelo menos um produto e preço para gerar o PDF!');
-                return;
-            }
-            
-            const doc = new jsPDF({
-                orientation: 'portrait',
-                unit: 'mm',
-                format: [58, 297]
-            });
-            
-            let yPosition = 5;
-            
-            etiquetas.forEach((item, index) => {
-                if (index > 0) {
-                    yPosition += 20;
-                }
-                
-                if (yPosition > 270) {
-                    doc.addPage([58, 297]);
-                    yPosition = 5;
-                }
-                
-                doc.setFontSize(9);
-                doc.setFont(undefined, 'bold');
-                
-                const produtoLines = doc.splitTextToSize(item.produto, 54);
-                const maxLines = 2;
-                const linesToShow = produtoLines.slice(0, maxLines);
-                
-                linesToShow.forEach((line, lineIndex) => {
-                    doc.text(line, 2, yPosition + (lineIndex * 4));
-                });
-                
-                doc.setFontSize(18);
-                doc.text(`R$ ${item.preco}`, 2, yPosition + 12);
-                
-                doc.setDrawColor(200);
-                doc.setLineWidth(0.1);
-                doc.line(2, yPosition + 16, 56, yPosition + 16);
-            });
-            
-            const pdfBlob = doc.output('blob');
-            currentPdfBlob = pdfBlob;
-            
-            const url = URL.createObjectURL(pdfBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'etiquetas_58mm.pdf';
-            link.click();
-            
-            document.getElementById('printBtn').disabled = false;
-            
-            alert(`PDF gerado com ${etiquetas.length} etiqueta(s)! Arquivo baixado e pronto para impressão.`);
-        }
-
-        function printPDF() {
-            if (!currentPdfBlob) {
-                alert('Gere o PDF primeiro antes de imprimir!');
-                return;
-            }
-            
-            const url = URL.createObjectURL(currentPdfBlob);
-            const iframe = document.createElement('iframe');
-            iframe.style.display = 'none';
-            iframe.src = url;
-            document.body.appendChild(iframe);
-            
-            iframe.onload = function() {
-                iframe.contentWindow.print();
-            };
         }
 
         function printLabels() {
