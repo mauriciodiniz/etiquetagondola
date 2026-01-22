@@ -155,78 +155,48 @@
         }
 
         @media print {
-            body * {
-                visibility: hidden;
+            body {
+                margin: 0;
+                padding: 0;
             }
             
-            #printArea, #printArea * {
-                visibility: visible;
+            .container {
+                display: none;
             }
             
             #printArea {
-                position: absolute;
-                left: 0;
-                top: 0;
+                display: block !important;
                 width: 58mm;
+                margin: 0;
+                padding: 0;
             }
         }
 
         .etiqueta {
             width: 58mm;
-            padding: 3mm;
+            padding: 4mm;
             page-break-after: always;
             font-family: Arial, sans-serif;
+            border-bottom: 1px dashed #ccc;
         }
 
         .etiqueta-produto {
-            font-size: 12pt;
+            font-size: 10pt;
             font-weight: bold;
-            margin-bottom: 2mm;
-            word-wrap: break-word;
+            margin-bottom: 3mm;
+            line-height: 1.2;
+            max-height: 2.4em;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            text-overflow: ellipsis;
         }
 
         .etiqueta-preco {
-            font-size: 16pt;
+            font-size: 24pt;
             font-weight: bold;
-        }
-
-        .etiqueta-50 {
-            width: 50mm;
-            height: 30mm;
-            padding: 2mm;
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-        }
-
-
-        .etiqueta-50 .produto {
-            font-size: 7pt;
-            font-weight: normal;
-            line-height: 1.2;
-            max-height: 8mm; /* duas linhas pequenas */
-            overflow: hidden;
-        }
-
-        .etiqueta-50 .preco {
-        margin-top: auto;        /* empurra para baixo */
-        font-size: 20pt;
-        font-weight: bold;
-        text-align: center;
-        line-height: 1;
-    }
-
-
-
-        /* Ajustes específicos para impressão térmica */
-        @media print {
-            #printArea {
-                width: 50mm;
-            }
-        }
-                @page {
-            size: 50mm 30mm;
-            margin: 0;
+            color: #000;
         }
     </style>
 </head>
@@ -340,39 +310,37 @@
             alert(`${tbody.children.length} produtos importados com sucesso!`);
         }
 
-                function printLabels() {
+        function printLabels() {
             const produtos = document.querySelectorAll('.produto');
             const precos = document.querySelectorAll('.preco');
             const printArea = document.getElementById('printArea');
-
+            
             printArea.innerHTML = '';
-            printArea.style.display = 'block';
-
             let count = 0;
-
+            
             for (let i = 0; i < produtos.length; i++) {
                 const produto = produtos[i].value.trim();
                 const preco = precos[i].value.trim();
-
+                
                 if (produto && preco) {
                     const etiqueta = document.createElement('div');
-                    etiqueta.className = 'etiqueta-50';
+                    etiqueta.className = 'etiqueta';
                     etiqueta.innerHTML = `
-                        <div class="produto">${produto}</div>
-                        <div class="preco">R$ ${preco}</div>
+                        <div class="etiqueta-produto">${produto}</div>
+                        <div class="etiqueta-preco">R$ ${preco}</div>
                     `;
                     printArea.appendChild(etiqueta);
                     count++;
                 }
             }
-
+            
             if (count === 0) {
                 alert('Preencha pelo menos um produto e preço para imprimir!');
                 return;
             }
-
+            
             window.print();
         }
-            </script>
+    </script>
 </body>
 </html>
