@@ -221,9 +221,15 @@
             }
             
             .etiqueta {
-                page-break-inside: avoid;
-                page-break-after: avoid;
-                page-break-before: avoid;
+                width: 58mm;
+                height: 32mm; /* 🔥 altura fixa */
+                padding: 4mm 2mm;
+                box-sizing: border-box;
+        
+                page-break-after: always;
+                break-after: page;
+        
+                overflow: hidden;
                 display: block !important;
             }
         }
@@ -241,17 +247,21 @@
         }
 
 
-        .etiqueta-produto {
+       .etiqueta-produto {
             font-size: 9pt;
             font-weight: bold;
-            line-height: 1.25;
-            max-height: 2.5em;
+            line-height: 1.2;
+        
+            height: 8mm; /* espaço exato para 2 linhas */
             overflow: hidden;
+        
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
+        
             text-transform: uppercase;
         }
+
         
 
         .etiqueta-preco {
