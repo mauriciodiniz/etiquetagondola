@@ -198,53 +198,41 @@
         }
 
         @media print {
-            @page {
-                size: 58mm auto;
-                margin: 0;
-            }
+                @page {
+                    size: 58mm auto;
+                    margin: 0;
+                }
             
-            body {
-                margin: 0;
-                padding: 0;
-                width: 58mm;
-            }
+                body {
+                    margin: 0;
+                    padding: 0;
+                    width: 58mm;
+                }
             
-            .container {
-                display: none !important;
-            }
+                .container {
+                    display: none !important;
+                }
             
-            #printArea {
-                display: block !important;
-                width: 58mm;
-                margin: 0;
-                padding: 0;
-            }
+                #printArea {
+                    display: block !important;
+                    width: 58mm;
+                    margin: 0;
+                    padding: 0;
+                }
             
-            .etiqueta {
-                width: 58mm;
-                height: 32mm; /* 🔥 altura fixa */
-                padding: 4mm 2mm;
-                box-sizing: border-box;
-        
-                page-break-after: always;
-                break-after: page;
-        
-                overflow: hidden;
-                display: block !important;
+                .etiqueta {
+                    width: 58mm;
+                    height: 32mm; /* ALTURA FIXA */
+                    padding: 4mm 2mm;
+                    box-sizing: border-box;
+            
+                    page-break-after: always;
+                    break-after: page;
+            
+                    overflow: hidden;
+                    display: block !important;
+                }
             }
-        }
-
-        .etiqueta {
-            width: 58mm;
-            min-height: 32mm; /* altura segura para 2 linhas */
-            padding: 4mm 2mm;
-            font-family: Arial, sans-serif;
-            box-sizing: border-box;
-            display: block;
-        
-            page-break-after: always;
-            break-after: page;
-        }
 
 
        .etiqueta-produto {
